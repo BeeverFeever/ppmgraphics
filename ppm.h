@@ -7,8 +7,12 @@
 /*============*/ 
 /* data types */
 /*============*/ 
+#if !defined (WIDTH)
 #define WIDTH 1000
+#endif 
+#if !defined (HEIGHT)
 #define HEIGHT 1000
+#endif 
 
 typedef struct vec2 {
     int x, y;
