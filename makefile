@@ -1,14 +1,15 @@
 CC = gcc
 CC_FLAGS = -Wall -Werror -std=c11
+CC_LIBS = -lm
 CC_SRC = ppm.c 
 
 all: main run
 
 main: ${CC_SRC}
-	${CC} ${CC_FLAGS} ${CC_SRC} -o main
+	${CC} ${CC_FLAGS} ${CC_LIBS} ${CC_SRC} -o main
 
 run: main
-	./main >test.ppm
+	./main 
 
 clean:
 	rm main

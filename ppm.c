@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <math.h>
-
-#define WIDTH 400
-#define HEIGHT 400
+#include <stdlib.h>
 
 /*============*/ 
 /* data types */
 /*============*/ 
+#define WIDTH 1000
+#define HEIGHT 1000
+
 typedef struct vec2 {
     int x, y;
 } vec2;
@@ -18,41 +19,45 @@ typedef struct vec3 {
 typedef vec2 pixel;
 typedef vec3 colour;
 
-colour display[WIDTH][HEIGHT];
+colour buffer[WIDTH][HEIGHT];
 
 
 /*=====================*/ 
 /* function prototypes */
 /*=====================*/ 
 
-// utils and initialisation
+// utils
 vec2 get_uvi(pixel p);
 void fill_display(colour c);
 
 // shapes and drawing
-void draw_pixel(pixel pos, colour c);
-void draw_square(vec2 pos, colour c);
-void draw_circle(vec2 pos, colour c, int r);
+void add_pixel(pixel pos, colour c);
+void add_square(vec2 pos, colour c);
+void add_circle(vec2 pos, colour c, int r);
 
 // will render a buffer to screen
-void render();
+void render(const char* path);
+
+// file utilities
+FILE* open_file(const char* path);
+
+
+int main(void)
+{
+    // fill the background with that colour
+    fill_display((colour){24, 94, 167});
+
+    add_square((vec2){200, 200}, (colour){255, 255, 255});
+    add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50);
+
+    render("test.ppm");
+
+    return 0;
+}
 
 /*=========================*/ 
 /* function implementations*/
 /*=========================*/ 
-int main(void)
-{
-    printf("P6\n%d %d 255\n", WIDTH, HEIGHT); 
-
-    fill_display((colour){255, 255, 0});
-
-    /* draw_square((vec2){10, 200}, (colour){255, 255, 255}); */
-    draw_circle((vec2){200, 200}, (colour){0, 0, 0}, 50);
-
-    render();
-
-    return 0;
-}
 
 vec2 get_uvi(pixel p)
 {
@@ -66,26 +71,22 @@ void fill_display(colour c)
 {
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            display[y][x] = c;
+           buffer[y][x] = c;
         }
     }
 }
 
-void draw_pixel(pixel pos, colour c)
+void add_pixel(pixel pos, colour c)
 {
-    display[pos.y][pos.x] = c;
+   buffer[pos.y][pos.x] = c;
 }
 
 // shapes
-void draw_square(vec2 pos, colour c)
+void add_square(vec2 pos, colour c)
 {
-    for (int y = pos.y / 2; y < pos.y * 1.5; y++)
-    {
-        for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++)
-        {
-            /* if (y == pos.y - (pos.y / 2) || y == pos.y + (pos.y / 2)) {} */
-            draw_pixel((pixel){x, y}, c);
-            /* printf("debug\n"); */
+    for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
+        for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++) {
+            add_pixel((pixel){x, y}, c);
         }
     }
 }
@@ -97,12 +98,10 @@ void draw_square(vec2 pos, colour c)
  * @param c colour of circle
  * @param r radiua of circle
  */
-void draw_circle(vec2 pos, colour c, int r)
+void add_circle(vec2 pos, colour c, int r) 
 {
-    for (int y = pos.y / 2; y < pos.y * 1.5; y++)
-    {
-        for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++)
-        {
+    for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
+        for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++) {
             vec2 p = {
                 .x = x - pos.x,
                 .y = y - pos.y
@@ -110,23 +109,41 @@ void draw_circle(vec2 pos, colour c, int r)
             double dist = sqrt(p.x*p.x + p.y*p.y);
 
             if (dist < r + 0.5)
-                draw_pixel((pixel){x, y}, c);
+                add_pixel((pixel){x, y}, c);
         }
     }
 }
 
 /*
- * Renders a buffer (currently just the display list) to file
+ * Renders a buffer (currently just thebuffer list) to file
  *
  * NOTE: this should be the only function that writes to file
  * TODO: implement file saving instead of just printf
  */
-void render()
+void render(const char* path)
 {
+    FILE *f = open_file(path);
+    fprintf(f, "P6\n%d %d 255\n", WIDTH, HEIGHT); 
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            printf("%c%c%c", display[y][x].x, display[y][x].y, display[y][x].z);
+            fprintf(f, "%c%c%c", buffer[y][x].x, buffer[y][x].y, buffer[y][x].z);
         }
     }
+    fclose(f);
 }
 
+
+/*===================*/ 
+/* file interactions */
+/*===================*/ 
+
+FILE* open_file(const char* path)
+{
+    FILE *f = fopen(path, "w");
+    if (f == NULL) {
+        fprintf(stderr, "ERROR: could not open file %s\n", path);
+        exit(-1);
+    }
+
+    return f;
+}
