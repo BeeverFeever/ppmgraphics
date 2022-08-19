@@ -1,3 +1,6 @@
+// TODO: make it so that you can just add a shape to a list and the render
+// function will go through and render that list of shapes
+
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -47,6 +50,7 @@ int main(void)
     // fill the background with that colour
     fill_display((colour){24, 94, 167});
 
+    // add some shapes
     add_square((vec2){200, 200}, (colour){255, 255, 255});
     add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50);
 
@@ -54,6 +58,7 @@ int main(void)
 
     return 0;
 }
+
 
 /*=========================*/ 
 /* function implementations*/
@@ -91,13 +96,6 @@ void add_square(vec2 pos, colour c)
     }
 }
 
-/* 
- * Draws circle to buffer
- *
- * @param pos center position of circle
- * @param c colour of circle
- * @param r radiua of circle
- */
 void add_circle(vec2 pos, colour c, int r) 
 {
     for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
@@ -118,7 +116,6 @@ void add_circle(vec2 pos, colour c, int r)
  * Renders a buffer (currently just thebuffer list) to file
  *
  * NOTE: this should be the only function that writes to file
- * TODO: implement file saving instead of just printf
  */
 void render(const char* path)
 {
@@ -144,6 +141,5 @@ FILE* open_file(const char* path)
         fprintf(stderr, "ERROR: could not open file %s\n", path);
         exit(-1);
     }
-
     return f;
 }
