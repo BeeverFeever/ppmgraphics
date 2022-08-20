@@ -2,17 +2,21 @@
 // function will go through and render that list of shapes
 
 #include "ppm.h"
+#include <stdio.h>
+
+/* colour buffer[WIDTH][HEIGHT]; */
 
 int main(void)
 {
+    ppm_img img = ppm_create_img(WIDTH, HEIGHT);
     // fill the background with that colour
-    fill_display((colour){24, 94, 167});
+    ppm_fill_img((colour){24, 94, 167}, &img);
 
     // add some shapes
-    add_square((vec2){200, 200}, (colour){255, 255, 255});
-    add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50);
-
-    render("test.ppm");
+    /* ppm_add_square((vec2){200, 200}, (colour){255, 255, 255}, &img); */
+    /* ppm_add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50, &img); */
+    
+    ppm_render_img("test.ppm", &img);
 
     return 0;
 }
@@ -21,6 +25,27 @@ int main(void)
 /*=========================*/ 
 /* function implementations*/
 /*=========================*/ 
+ppm_img ppm_create_img(int w, int h)
+{
+    ppm_img img;
+    img.w = w;
+    img.h = h;
+    img.buffer = malloc(h * sizeof(colour*));
+    for (size_t i = 0; i < h; i++)
+    {
+        img.buffer[i] = malloc(w * sizeof(colour));
+    }
+
+    return img;
+}
+
+void ppm_free_img(ppm_img b)
+{
+    for (size_t i = 0; i < b.h; i++)
+        free(b.buffer[i]);
+
+    free(b.buffer);
+}
 
 vec2 get_uvi(pixel p)
 {
@@ -30,31 +55,31 @@ vec2 get_uvi(pixel p)
     };
 }
 
-void fill_display(colour c)
+void ppm_fill_img(colour c, ppm_img *img)
 {
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-           buffer[y][x] = c;
+           img->buffer[y][x] = c;
         }
     }
 }
 
-void add_pixel(pixel pos, colour c)
+void ppm_add_pixel(pixel pos, colour c, ppm_img *img)
 {
-   buffer[pos.y][pos.x] = c;
+   img->buffer[pos.y][pos.x] = c;
 }
 
 // shapes
-void add_square(vec2 pos, colour c)
+void ppm_add_square(vec2 pos, colour c, ppm_img *img)
 {
     for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
         for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++) {
-            add_pixel((pixel){x, y}, c);
+            ppm_add_pixel((pixel){x, y}, c, img);
         }
     }
 }
 
-void add_circle(vec2 pos, colour c, int r) 
+void ppm_add_circle(vec2 pos, colour c, int r, ppm_img *img)
 {
     for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
         for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++) {
@@ -65,7 +90,7 @@ void add_circle(vec2 pos, colour c, int r)
             double dist = sqrt(p.x*p.x + p.y*p.y);
 
             if (dist < r + 0.5)
-                add_pixel((pixel){x, y}, c);
+                ppm_add_pixel((pixel){x, y}, c, img);
         }
     }
 }
@@ -75,13 +100,13 @@ void add_circle(vec2 pos, colour c, int r)
  *
  * NOTE: this should be the only function that writes to file
  */
-void render(const char* path)
+void ppm_render_img(const char* path, ppm_img *img)
 {
-    FILE *f = open_file(path);
+    FILE *f = ppm_open_file(path);
     fprintf(f, "P6\n%d %d 255\n", WIDTH, HEIGHT); 
     for (int y = 0; y < HEIGHT; y++) {
         for (int x = 0; x < WIDTH; x++) {
-            fprintf(f, "%c%c%c", buffer[y][x].x, buffer[y][x].y, buffer[y][x].z);
+            fprintf(f, "%c%c%c", img->buffer[y][x].x, img->buffer[y][x].y, img->buffer[y][x].z);
         }
     }
     fclose(f);
@@ -92,7 +117,7 @@ void render(const char* path)
 /* file interactions */
 /*===================*/ 
 
-FILE* open_file(const char* path)
+static FILE* ppm_open_file(const char* path)
 {
     FILE *f = fopen(path, "w");
     if (f == NULL) {
