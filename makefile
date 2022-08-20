@@ -1,7 +1,7 @@
 CC = gcc
-CC_FLAGS = -Wall -Werror -std=c11
+CC_FLAGS = -Wall -Werror -std=c11 -g
 CC_LIBS = -lm
-CC_SRC = ppm.c 
+CC_SRC = ppm.c
 
 all: main run
 
