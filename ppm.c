@@ -18,6 +18,7 @@ int main(void)
     ppm_add_circle((vec2){100, 674}, (colour){153, 73, 213}, 78, &img);
     
     ppm_render_img("test.ppm", &img);
+    ppm_free_img(img);
 
     return 0;
 }
