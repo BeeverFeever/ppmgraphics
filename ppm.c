@@ -13,8 +13,9 @@ int main(void)
     ppm_fill_img((colour){24, 94, 167}, &img);
 
     // add some shapes
-    /* ppm_add_square((vec2){200, 200}, (colour){255, 255, 255}, &img); */
-    /* ppm_add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50, &img); */
+    ppm_add_square((vec2){200, 200}, (colour){255, 255, 255}, &img);
+    ppm_add_circle((vec2){200, 200}, (colour){0, 0, 0}, 50, &img);
+    ppm_add_circle((vec2){100, 674}, (colour){153, 73, 213}, 78, &img);
     
     ppm_render_img("test.ppm", &img);
 
@@ -57,8 +58,8 @@ vec2 get_uvi(pixel p)
 
 void ppm_fill_img(colour c, ppm_img *img)
 {
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
+    for (int y = 0; y < img->h; y++) {
+        for (int x = 0; x < img->w; x++) {
            img->buffer[y][x] = c;
         }
     }
@@ -81,8 +82,8 @@ void ppm_add_square(vec2 pos, colour c, ppm_img *img)
 
 void ppm_add_circle(vec2 pos, colour c, int r, ppm_img *img)
 {
-    for (int y = pos.y / 2; y < pos.y * 1.5; y++) {
-        for (int x = pos.x - (pos.x / 2); x < pos.x + (pos.x / 2); x++) {
+    for (int y = pos.y - r; y < pos.y + r; y++) {
+        for (int x = pos.x - r; x < pos.x + r; x++) {
             vec2 p = {
                 .x = x - pos.x,
                 .y = y - pos.y
@@ -103,9 +104,9 @@ void ppm_add_circle(vec2 pos, colour c, int r, ppm_img *img)
 void ppm_render_img(const char* path, ppm_img *img)
 {
     FILE *f = ppm_open_file(path);
-    fprintf(f, "P6\n%d %d 255\n", WIDTH, HEIGHT); 
-    for (int y = 0; y < HEIGHT; y++) {
-        for (int x = 0; x < WIDTH; x++) {
+    fprintf(f, "P6\n%d %d 255\n", img->w, img->h); 
+    for (int y = 0; y < img->h; y++) {
+        for (int x = 0; x < img->w; x++) {
             fprintf(f, "%c%c%c", img->buffer[y][x].x, img->buffer[y][x].y, img->buffer[y][x].z);
         }
     }
