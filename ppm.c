@@ -27,6 +27,8 @@ int main(void)
 /*=========================*/ 
 /* function implementations*/
 /*=========================*/ 
+// NOTE: make sure to free the image once you are done with it (after
+// rendering);
 ppm_img ppm_create_img(int w, int h)
 {
     ppm_img img;
@@ -37,7 +39,6 @@ ppm_img ppm_create_img(int w, int h)
     {
         img.buffer[i] = malloc(w * sizeof(colour));
     }
-
     return img;
 }
 
@@ -49,13 +50,13 @@ void ppm_free_img(ppm_img b)
     free(b.buffer);
 }
 
-vec2 get_uvi(pixel p)
-{
-    return (vec2){
-        .x = floor(((float)p.x / WIDTH) * 255),
-        .y = floor(((float)p.y / HEIGHT) * 255),
-    };
-}
+/* vec2 get_uvi(pixel p) */
+/* { */
+/*     return (vec2){ */
+/*         .x = floor(((float)p.x / WIDTH) * 255), */
+/*         .y = floor(((float)p.y / HEIGHT) * 255), */
+/*     }; */
+/* } */
 
 void ppm_fill_img(colour c, ppm_img *img)
 {
@@ -97,18 +98,13 @@ void ppm_add_circle(vec2 pos, colour c, int r, ppm_img *img)
     }
 }
 
-/*
- * Renders a buffer (currently just thebuffer list) to file
- *
- * NOTE: this should be the only function that writes to file
- */
 void ppm_render_img(const char* path, ppm_img *img)
 {
     FILE *f = ppm_open_file(path);
     fprintf(f, "P6\n%d %d 255\n", img->w, img->h); 
     for (int y = 0; y < img->h; y++) {
         for (int x = 0; x < img->w; x++) {
-            fprintf(f, "%c%c%c", img->buffer[y][x].x, img->buffer[y][x].y, img->buffer[y][x].z);
+            fprintf(f, "%c%c%c", img->buffer[y][x].R, img->buffer[y][x].G, img->buffer[y][x].B);
         }
     }
     fclose(f);
